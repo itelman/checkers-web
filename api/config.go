@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+
+	envconfig "github.com/sethvargo/go-envconfig"
 )
 
 type config struct {
