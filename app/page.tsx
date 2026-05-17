@@ -20,7 +20,7 @@ export default function CheckersGame() {
     const [turn, setTurn] = useLocalStorage<number>("checkers_turn", 1);
     const [selectedPiece, setSelectedPiece] = useState<{x: number, y: number} | null>(null);
 
-    /*
+
     const handleCellClick = (x: number, y: number) => {
         // 1. If clicking own piece, select it
         if (board[y][x] === turn) {
@@ -42,8 +42,9 @@ export default function CheckersGame() {
             setTurn(turn === 1 ? 2 : 1);
         }
     };
-     */
 
+
+    /*
     const handleCellClick = async (x: number, y: number) => {
         if (board[y][x] === turn) {
             setSelectedPiece({ x, y });
@@ -86,6 +87,7 @@ export default function CheckersGame() {
             }
         }
     };
+     */
 
     const resetGame = () => {
         setBoard(INITIAL_BOARD);
