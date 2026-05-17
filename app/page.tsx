@@ -20,6 +20,7 @@ export default function CheckersGame() {
     const [turn, setTurn] = useLocalStorage<number>("checkers_turn", 1);
     const [selectedPiece, setSelectedPiece] = useState<{x: number, y: number} | null>(null);
 
+    /*
     const handleCellClick = (x: number, y: number) => {
         // 1. If clicking own piece, select it
         if (board[y][x] === turn) {
@@ -39,6 +40,50 @@ export default function CheckersGame() {
             setBoard(newBoard);
             setSelectedPiece(null);
             setTurn(turn === 1 ? 2 : 1);
+        }
+    };
+     */
+
+    const handleCellClick = async (x: number, y: number) => {
+        if (board[y][x] === turn) {
+            setSelectedPiece({ x, y });
+            return;
+        }
+
+        if (selectedPiece && board[y][x] === 0 && (x + y) % 2 !== 0) {
+
+            // 1. Define your backend URL (using an environment variable)
+            const backendUrl = 'http://localhost:8888';
+
+            try {
+                // 2. Send the move to the Go-Kit backend
+                const response = await fetch(`${backendUrl}/game/move`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        state: { board, current_turn: turn, winner: 0 },
+                        from_x: selectedPiece.x,
+                        from_y: selectedPiece.y,
+                        to_x: x,
+                        to_y: y
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.err) {
+                    alert("Invalid move: " + data.err);
+                    return;
+                }
+
+                // 3. Update the frontend with the validated state from the backend
+                setBoard(data.state.board);
+                setTurn(data.state.current_turn);
+                setSelectedPiece(null);
+
+            } catch (error) {
+                console.error("Failed to reach the backend:", error);
+            }
         }
     };
 
