@@ -4,7 +4,5 @@
 # shellcheck disable=SC2046
 export $(grep -v '^#' .env | xargs)
 
-docker build -t checkers .
-sleep 5
-
-docker run -d --name checkers -p 8888:8888 checkers
+docker build -t checkers-api .
+docker run -d --name checkers-api -p 8888:8888 checkers-api

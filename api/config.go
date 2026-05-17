@@ -2,14 +2,12 @@ package main
 
 import (
 	"context"
-
-	"github.com/sethvargo/go-envconfig"
 )
 
 type config struct {
 	ENV       string `env:"ENV, default=prod"`
 	Port      string `env:"PORT, default=8888"`
-	APIHost   string `env:"API_HOST"`
+	APIHost   string `env:"API_HOST, default=http://localhost:8888"`
 	JWTSecret string `env:"JWT_SECRET"`
 }
 
