@@ -1,20 +1,38 @@
-# Build Stage
-FROM golang:1.26-alpine AS builder
-RUN apk add --no-cache build-base gcc musl-dev
-
+# Stage 1: Install dependencies
+FROM node:18-alpine AS deps
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
+COPY package.json package-lock.json ./
+RUN npm ci
 
+# Stage 2: Build the app
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN go mod download
+# Disable telemetry during the build
+ENV NEXT_TELEMETRY_DISABLED 1
+RUN npm run build
 
-# Final Stage (no need to copy binary)
-FROM golang:1.26-alpine
+# Stage 3: Production server
+FROM node:18-alpine AS runner
 WORKDIR /app
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Copy application code from the builder stage
-COPY --from=builder /app .
+# Create a non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-EXPOSE 8888
+# Copy necessary files from the builder stage
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Start the application using go run
-CMD ["go", "run", "./api"]
+USER nextjs
+
+EXPOSE 3000
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+CMD ["node", "server.js"]
